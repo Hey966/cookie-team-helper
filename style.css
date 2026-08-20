@@ -18,7 +18,7 @@ dialog { width: 92%; max-width: 400px; border: none; border-radius: 12px; paddin
 dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
 
 /* --- 新版陣容網格樣式 --- */
-.team-grid-cookie { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
+.team-grid-cookie { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 10px; }
 .team-grid-pet { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; }
 
 .team-slot { position: relative; aspect-ratio: 1; border: 2px dashed #bbb; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #fafafa; overflow: hidden; transition: 0.2s; }
