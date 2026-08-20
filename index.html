@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薑餅人 - 陣容助手</title>
+    <!-- 引入外部的 CSS 檔案 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 首頁導航 -->
+<div id="page-home" class="page active">
+    <h1 style="text-align: center; color: #333; margin-bottom: 30px;">薑餅人陣容助手</h1>
+    <button class="menu-btn" onclick="showPage('page-library')">🛠️ 圖鑑管理</button>
+    <button class="menu-btn" style="background:#FF9800" onclick="showPage('page-team')">⚔️ 陣容搭配</button>
+    <button class="menu-btn" style="background:#2196F3" onclick="showPage('page-backup')">🛡️ 資料備份與還原</button>
+    <div class="storage-status"></div>
+</div>
+
+<!-- 圖鑑管理 -->
+<div id="page-library" class="page">
+    <button onclick="showPage('page-home')" style="background:#888; margin-bottom: 15px;">⬅️ 返回首頁</button>
+    <h2>新增圖鑑</h2>
+    <div class="section">
+        <input type="text" id="itemName" placeholder="名稱">
+        <select id="itemType"><option value="cookie">餅乾</option><option value="pet">寵物</option></select>
+        <select id="itemRarity">
+            <option value="6">TSSR</option><option value="5">SSR</option><option value="4">SR</option>
+            <option value="3">R</option><option value="2">U</option><option value="1">C</option>
+        </select>
+        <input type="file" id="itemImg" accept="image/*">
+        <button onclick="saveItem()">新增項目</button>
+    </div>
+    
+    <div class="section">
+        <h3 style="margin-top: 0;">圖鑑列表 <span style="font-size: 14px; color: #666; font-weight: normal;">(餅乾: <span id="cookieCount">0</span> / 寵物: <span id="petCount">0</span>)</span></h3>
+        <select id="sortOrder" onchange="renderAll()">
+            <option value="high-low">稀有度 高 → 低 (預設)</option>
+            <option value="low-high">稀有度 低 → 高</option>
+        </select>
+        <div id="libraryList"></div>
+    </div>
+</div>
+
+<!-- 陣容搭配 -->
+<div id="page-team" class="page">
+    <button onclick="showPage('page-home')" style="background:#888; margin-bottom: 15px;">⬅️ 返回首頁</button>
+    <h2>陣容搭配</h2>
+
+    <div class="section" style="background: #e3f2fd;">
+        <h3 style="margin-top: 0;">💾 陣容存檔</h3>
+        <input type="text" id="teamName" placeholder="輸入陣容名稱 (例如: 公會戰一隊)">
+        <button onclick="saveTeam()" style="background: #2196F3;">儲存當前陣容</button>
+        <hr style="margin: 15px 0; border: 0.5px solid #bbb;">
+        <select id="savedTeamsList" onchange="loadTeam()">
+            <option value="">-- 讀取已儲存的陣容 --</option>
+        </select>
+        <button onclick="deleteTeam()" class="btn-del">刪除所選陣容</button>
+        <button onclick="clearEntireTeam()" style="background: #FF9800; margin-top: 10px;">🧹 一鍵清空畫面上陣容</button>
+    </div>
+
+    <div class="section">
+        <h3>🍪 餅乾 (12位)</h3>
+        <div id="cookieGrid" class="team-grid-cookie"></div>
+        <hr style="margin: 20px 0; border: 0.5px solid #eee;">
+        <h3>🐾 寵物 (3位)</h3>
+        <div id="petGrid" class="team-grid-pet"></div>
+    </div>
+</div>
+
+<!-- 資料備份 -->
+<div id="page-backup" class="page">
+    <button onclick="showPage('page-home')" style="background:#888; margin-bottom: 15px;">⬅️ 返回首頁</button>
+    <h2>資料備份 (檔案模式)</h2>
+    <div class="section">
+        <h3 style="margin-top: 0; font-size: 16px;">匯出資料</h3>
+        <p style="font-size: 12px; color: #666;">將目前的圖鑑與陣容打包成檔案下載到手機中。</p>
+        <button onclick="exportFile()" style="background:#2196F3">⬇️ 下載備份檔案 (.json)</button>
+        <hr style="margin: 20px 0; border: 0.5px solid #eee;">
+        <h3 style="margin-top: 0; font-size: 16px;">匯入資料</h3>
+        <p style="font-size: 12px; color: #666;">選擇之前下載的 .json 備份檔案來還原資料。</p>
+        <input type="file" id="backupFileInput" accept=".json" style="margin-bottom: 10px;">
+        <button onclick="importFile()" class="btn-del">🔄 讀取檔案並還原</button>
+        <div class="storage-status"></div>
+    </div>
+</div>
+
+<!-- 圖鑑編輯視窗 -->
+<dialog id="editDialog">
+    <h3>編輯項目</h3>
+    <label style="font-size: 14px; color: #555;">名稱</label>
+    <input type="text" id="editName">
+    <label style="font-size: 14px; color: #555;">稀有度</label>
+    <select id="editRarity">
+        <option value="6">TSSR</option><option value="5">SSR</option><option value="4">SR</option>
+        <option value="3">R</option><option value="2">U</option><option value="1">C</option>
+    </select>
+    <label style="font-size: 14px; color: #555;">更改圖片 (不選則保留原圖)</label>
+    <input type="file" id="editImg" accept="image/*">
+    <button onclick="confirmEdit()" style="margin-top: 15px;">儲存修改</button>
+    <button onclick="document.getElementById('editDialog').close()" style="background:#888; margin-top:5px;">取消</button>
+</dialog>
+
+<!-- 角色選擇彈窗 (陣容專用) -->
+<dialog id="selectItemDialog">
+    <h3 id="selectModalTitle" style="margin-top: 0; text-align: center;">選擇角色</h3>
+    <div id="selectItemGrid" class="select-grid"></div>
+    <button onclick="clearCurrentSlot()" class="btn-del" style="margin-top:15px;">🗑️ 卸下此位置角色</button>
+    <button onclick="document.getElementById('selectItemDialog').close()" style="background:#888; margin-top:5px;">返回</button>
+</dialog>
+
+<!-- 引入外部的 JavaScript 檔案 -->
+<script src="script.js"></script>
+
+</body>
+</html>
