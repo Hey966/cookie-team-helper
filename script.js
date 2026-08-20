@@ -4,6 +4,8 @@ let teamsDB = JSON.parse(localStorage.getItem('myTeams')) || [];
 let currentTeamCookies = new Array(12).fill("");
 let currentTeamPets = new Array(3).fill("");
 
+let currentLoadedTeamId = null; 
+
 let activeSlotType = ""; 
 let activeSlotIndex = -1;
 let editId = null;
@@ -188,27 +190,69 @@ function clearEntireTeam() {
         currentTeamPets = new Array(3).fill("");
         document.getElementById('teamName').value = '';
         document.getElementById('savedTeamsList').value = '';
+        currentLoadedTeamId = null; 
         renderTeamUI();
     }
 }
 
+/* 🌟 核心升級：智慧判定「另存新檔」與「改名」 */
 function saveTeam() {
     const tName = document.getElementById('teamName').value.trim();
     if(!tName) return alert('請輸入陣容名稱！');
 
+    // 如果目前有載入陣容 (處於編輯模式)
+    if (currentLoadedTeamId) {
+        const idx = teamsDB.findIndex(t => t.id == currentLoadedTeamId);
+        if (idx > -1) {
+            const oldName = teamsDB[idx].name;
+            
+            // 判斷玩家是否「修改了名稱」
+            if (oldName !== tName) {
+                const wantNew = confirm(`您修改了陣容名稱！\n\n【確定】👉 另存為全新的陣容「${tName}」\n【取消】👉 直接把原本的「${oldName}」改名覆蓋`);
+                
+                if (wantNew) {
+                    // 選擇另存新檔：解除追蹤，讓系統走最下方的新增邏輯
+                    currentLoadedTeamId = null;
+                } else {
+                    // 選擇改名覆蓋
+                    teamsDB[idx].name = tName; 
+                    teamsDB[idx].cookies = [...currentTeamCookies];
+                    teamsDB[idx].pets = [...currentTeamPets];
+                    localStorage.setItem('myTeams', JSON.stringify(teamsDB));
+                    alert('陣容改名並更新成功！');
+                    renderTeamsDropdown();
+                    document.getElementById('savedTeamsList').value = currentLoadedTeamId; 
+                    return;
+                }
+            } else {
+                // 名稱沒改：直接靜默更新覆蓋
+                teamsDB[idx].cookies = [...currentTeamCookies];
+                teamsDB[idx].pets = [...currentTeamPets];
+                localStorage.setItem('myTeams', JSON.stringify(teamsDB));
+                alert('陣容更新成功！');
+                return; 
+            }
+        }
+    }
+
+    // --- 以下為新增陣容邏輯 (包含上面另存新檔跳過來的) ---
     const existingIdx = teamsDB.findIndex(t => t.name === tName);
     if (existingIdx > -1) {
         if (confirm(`名稱為「${tName}」的陣容已存在，要覆蓋它嗎？`)) {
             teamsDB[existingIdx].cookies = [...currentTeamCookies];
             teamsDB[existingIdx].pets = [...currentTeamPets];
+            currentLoadedTeamId = teamsDB[existingIdx].id; 
         } else return;
     } else {
-        teamsDB.push({ id: Date.now().toString(), name: tName, cookies: [...currentTeamCookies], pets: [...currentTeamPets] });
+        const newId = Date.now().toString();
+        teamsDB.push({ id: newId, name: tName, cookies: [...currentTeamCookies], pets: [...currentTeamPets] });
+        currentLoadedTeamId = newId; 
     }
     
     localStorage.setItem('myTeams', JSON.stringify(teamsDB));
-    alert('陣容儲存成功！');
+    alert('新陣容儲存成功！');
     renderTeamsDropdown();
+    document.getElementById('savedTeamsList').value = currentLoadedTeamId; 
 }
 
 function renderTeamsDropdown() {
@@ -220,11 +264,19 @@ function renderTeamsDropdown() {
 
 function loadTeam() {
     const tId = document.getElementById('savedTeamsList').value;
-    if (!tId) return;
+    if (!tId) {
+        currentTeamCookies = new Array(12).fill("");
+        currentTeamPets = new Array(3).fill("");
+        document.getElementById('teamName').value = '';
+        currentLoadedTeamId = null;
+        renderTeamUI();
+        return;
+    }
 
     const team = teamsDB.find(t => t.id == tId); 
     if (!team) return;
 
+    currentLoadedTeamId = team.id; 
     document.getElementById('teamName').value = team.name;
 
     currentTeamCookies = new Array(12).fill("");
@@ -244,8 +296,14 @@ function deleteTeam() {
     if (confirm(`確定要刪除陣容「${team.name}」嗎？`)) {
         teamsDB = teamsDB.filter(t => t.id != tId); 
         localStorage.setItem('myTeams', JSON.stringify(teamsDB));
+        
         document.getElementById('teamName').value = '';
+        currentTeamCookies = new Array(12).fill("");
+        currentTeamPets = new Array(3).fill("");
+        currentLoadedTeamId = null;
+        
         renderTeamsDropdown();
+        renderTeamUI();
     }
 }
 
@@ -324,6 +382,7 @@ function importFile() {
                 
                 currentTeamCookies = new Array(12).fill("");
                 currentTeamPets = new Array(3).fill("");
+                currentLoadedTeamId = null;
                 
                 renderAll(); 
                 alert("資料還原成功！");
