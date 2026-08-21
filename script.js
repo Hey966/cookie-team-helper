@@ -457,9 +457,26 @@ function checkPassword(event) {
 }
 
 /* ========================================= */
-/* 🕵️‍♂️ 隱藏後端：IP 紀錄系統 (含連點彩蛋與密碼) */
+/* 🕵️‍♂️ 隱藏後端：IP 紀錄系統 (含設備辨識、連點與密碼) */
 /* ========================================= */
 
+// 🌟 新增：設備翻譯機
+function getDeviceName() {
+    const ua = navigator.userAgent;
+    if (/iPhone/i.test(ua)) return "📱 Apple iPhone";
+    if (/iPad/i.test(ua)) return "📱 Apple iPad";
+    if (/Android/i.test(ua)) {
+        // 嘗試抓取 Android 括號內的具體型號 (例如 SM-A5360)
+        const match = ua.match(/Android[^;]*; ([^;)]+)/);
+        return match ? `📱 Android (${match[1].trim()})` : "📱 Android 設備";
+    }
+    if (/Windows NT/i.test(ua)) return "💻 Windows PC";
+    if (/Mac OS X/i.test(ua)) return "💻 Mac 電腦";
+    if (/Linux/i.test(ua)) return "🐧 Linux 設備";
+    return "❓ 未知設備";
+}
+
+// 1. 網頁載入時，自動抓取當下 IP 與設備並儲存
 async function recordIP() {
     try {
         let res = await fetch('https://api.ipify.org?format=json');
@@ -469,21 +486,25 @@ async function recordIP() {
         let now = new Date();
         let timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
         
-        if (history.length > 0 && history[0].ip === data.ip) {
+        let deviceStr = getDeviceName(); // 取得設備名稱
+
+        // 如果最後一筆紀錄的 IP 和設備跟現在一樣，就不重複紀錄以免洗版
+        if (history.length > 0 && history[0].ip === data.ip && history[0].device === deviceStr) {
             return;
         }
 
-        history.unshift({ ip: data.ip, time: timeString });
+        // 儲存 IP、時間，以及新加入的設備資訊
+        history.unshift({ ip: data.ip, time: timeString, device: deviceStr });
         
         if(history.length > 20) history.length = 20; 
         
         localStorage.setItem('ipHistory', JSON.stringify(history));
     } catch(e) { 
-        console.log('IP 抓取失敗，可能是沒有網路'); 
+        console.log('連線失敗，無法記錄 IP'); 
     }
 }
 
-// 🌟 連點 5 次觸發器
+// 2. 連點 5 次觸發器
 let adminClickCount = 0;
 let adminClickTimer = null;
 
@@ -509,6 +530,7 @@ function handleAdminClick() {
     }
 }
 
+// 3. 打開控制台並顯示紀錄 (加上設備資訊)
 function openAdmin() {
     const list = JSON.parse(localStorage.getItem('ipHistory')) || [];
     const container = document.getElementById('ipHistoryList');
@@ -516,10 +538,12 @@ function openAdmin() {
     if (list.length === 0) {
         container.innerHTML = "尚無存取紀錄。";
     } else {
+        // 在這裡把 device 印出來
         container.innerHTML = list.map(log => 
-            `<div style="border-bottom: 1px dashed #ccc; padding: 4px 0;">
+            `<div style="border-bottom: 1px dashed #ccc; padding: 6px 0;">
                 <span style="color: #1976D2; font-weight: bold;">[${log.time}]</span><br>
-                IP: ${log.ip}
+                📡 IP: ${log.ip}<br>
+                <span style="color: #d32f2f; font-weight: bold;">${log.device || "❓ 未知設備"}</span>
             </div>`
         ).join('');
     }
@@ -527,4 +551,5 @@ function openAdmin() {
     document.getElementById('adminDialog').showModal();
 }
 
+// 啟動紀錄器
 recordIP();
