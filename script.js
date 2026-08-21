@@ -438,3 +438,22 @@ function importFile() {
 }
 
 renderAll();
+/* --- 密碼保護功能 --- */
+function checkPassword(event) {
+    const block = document.getElementById('addCharacterBlock');
+    
+    // 如果現在是「關閉狀態」準備展開，才需要檢查密碼
+    if (!block.open) {
+        event.preventDefault(); // 攔截預設的直接展開動作
+        
+        const pwd = prompt("請輸入管理員密碼以新增角色：");
+        
+        // 👇 這裡的 "" 就是你的密碼，可以隨意改成你想要的數字或英文！
+        if (pwd === "963781169") { 
+            block.open = true; // 密碼正確，放行展開
+        } else if (pwd !== null) {
+            alert("密碼錯誤，拒絕存取！"); // 密碼輸入錯誤
+        }
+        // 若使用者按取消 (pwd === null)，則什麼事都不做，保持關閉
+    }
+}

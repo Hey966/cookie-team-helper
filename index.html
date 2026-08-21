@@ -61,9 +61,9 @@
         </div>
     </div>
 
-    <!-- 新增角色收納區 -->
-    <details class="section" style="cursor: pointer;">
-        <summary style="font-weight: 800; font-size: 18px; color: var(--text-main); outline: none;">➕ 點此展開：新增角色</summary>
+        <!-- 新增角色收納區 (已加鎖) -->
+    <details id="addCharacterBlock" class="section" style="cursor: pointer;">
+        <summary onclick="checkPassword(event)" style="font-weight: 800; font-size: 18px; color: var(--text-main); outline: none;">➕ 點此展開：新增角色</summary>
         <div style="margin-top: 15px;">
             <input type="text" id="itemName" placeholder="名稱">
             <select id="itemType"><option value="cookie">餅乾</option><option value="pet">寵物</option></select>
