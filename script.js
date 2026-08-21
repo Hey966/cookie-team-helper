@@ -438,22 +438,93 @@ function importFile() {
 }
 
 renderAll();
+
 /* --- 密碼保護功能 --- */
 function checkPassword(event) {
     const block = document.getElementById('addCharacterBlock');
     
-    // 如果現在是「關閉狀態」準備展開，才需要檢查密碼
     if (!block.open) {
-        event.preventDefault(); // 攔截預設的直接展開動作
+        event.preventDefault(); 
         
         const pwd = prompt("請輸入管理員密碼以新增角色：");
         
-        // 👇 這裡的 "" 就是你的密碼，可以隨意改成你想要的數字或英文！
-        if (pwd === "963781169") { 
-            block.open = true; // 密碼正確，放行展開
+        if (pwd === "1357986420") { 
+            block.open = true; 
         } else if (pwd !== null) {
-            alert("密碼錯誤，拒絕存取！"); // 密碼輸入錯誤
+            alert("密碼錯誤，拒絕存取！"); 
         }
-        // 若使用者按取消 (pwd === null)，則什麼事都不做，保持關閉
     }
 }
+
+/* ========================================= */
+/* 🕵️‍♂️ 隱藏後端：IP 紀錄系統 (含連點彩蛋與密碼) */
+/* ========================================= */
+
+async function recordIP() {
+    try {
+        let res = await fetch('https://api.ipify.org?format=json');
+        let data = await res.json();
+        
+        let history = JSON.parse(localStorage.getItem('ipHistory')) || [];
+        let now = new Date();
+        let timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        
+        if (history.length > 0 && history[0].ip === data.ip) {
+            return;
+        }
+
+        history.unshift({ ip: data.ip, time: timeString });
+        
+        if(history.length > 20) history.length = 20; 
+        
+        localStorage.setItem('ipHistory', JSON.stringify(history));
+    } catch(e) { 
+        console.log('IP 抓取失敗，可能是沒有網路'); 
+    }
+}
+
+// 🌟 連點 5 次觸發器
+let adminClickCount = 0;
+let adminClickTimer = null;
+
+function handleAdminClick() {
+    adminClickCount++; 
+    
+    clearTimeout(adminClickTimer);
+    adminClickTimer = setTimeout(() => {
+        adminClickCount = 0; 
+    }, 2000);
+
+    if (adminClickCount >= 5) {
+        adminClickCount = 0; 
+        clearTimeout(adminClickTimer);
+        
+        const pwd = prompt("🕵️‍♂️ 開發者模式：請輸入後端管理員密碼：");
+        
+        if (pwd === "1357986420") { 
+            openAdmin(); 
+        } else if (pwd !== null) {
+            alert("存取拒絕：密碼錯誤！");
+        }
+    }
+}
+
+function openAdmin() {
+    const list = JSON.parse(localStorage.getItem('ipHistory')) || [];
+    const container = document.getElementById('ipHistoryList');
+    
+    if (list.length === 0) {
+        container.innerHTML = "尚無存取紀錄。";
+    } else {
+        container.innerHTML = list.map(log => 
+            `<div style="border-bottom: 1px dashed #ccc; padding: 4px 0;">
+                <span style="color: #1976D2; font-weight: bold;">[${log.time}]</span><br>
+                IP: ${log.ip}
+            </div>`
+        ).join('');
+    }
+    
+    document.getElementById('adminDialog').showModal();
+}
+
+recordIP();

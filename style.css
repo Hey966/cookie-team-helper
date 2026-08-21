@@ -220,8 +220,16 @@ dialog[open] { animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
 /* --- 狀態列 --- */
 .storage-status { 
-    text-align: center; font-size: 13px; margin-top: 20px; color: #8d6e63; font-weight: 800; 
-    background: rgba(255,255,255,0.6); padding: 8px; border-radius: 20px;
+    text-align: center; 
+    font-size: 13px; 
+    margin-top: 20px; 
+    color: #8d6e63; 
+    font-weight: 800; 
+    background: rgba(255,255,255,0.6); 
+    padding: 8px; 
+    border-radius: 20px;
+    user-select: none; /* 🚫 防止連點時文字被反白選取 */
+    cursor: default;   /* 讓游標保持箭頭，不顯示可以點擊的手指 */
 }
 
 /* ========================================= */
