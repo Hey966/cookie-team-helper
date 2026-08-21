@@ -3,19 +3,18 @@ let teamsDB = JSON.parse(localStorage.getItem('myTeams')) || [];
 
 let currentTeamCookies = new Array(12).fill("");
 let currentTeamPets = new Array(3).fill("");
-
 let currentLoadedTeamId = null; 
 
 let activeSlotType = ""; 
 let activeSlotIndex = -1;
-let editId = null;
+let currentDetailId = null; 
 
 const rarityMap = ['','C','U','R','SR','SSR','TSSR'];
 
 function showPage(p) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById(p).classList.add('active');
-    renderAll();
+    if (p === 'page-library') renderAll();
 }
 
 function updateStorageInfo() {
@@ -76,13 +75,32 @@ async function saveItem() {
     }
     
     nameInput.value = ''; fileInput.value = ''; rarityInput.value = '6';
+    alert("新增成功！");
     renderAll();
 }
 
 function renderAll() {
     const order = document.getElementById('sortOrder').value || 'high-low';
-    let cookies = db.filter(i => i.type === 'cookie');
-    let pets = db.filter(i => i.type === 'pet');
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : "";
+    
+    const filterType = document.getElementById('filterType') ? document.getElementById('filterType').value : 'all';
+    const filterRarity = document.getElementById('filterRarity') ? document.getElementById('filterRarity').value : 'all';
+
+    const showCookie = (filterType === 'all' || filterType === 'cookie');
+    const showPet = (filterType === 'all' || filterType === 'pet');
+
+    let cookies = showCookie ? db.filter(i => 
+        i.type === 'cookie' && 
+        i.name.toLowerCase().includes(searchTerm) &&
+        (filterRarity === 'all' || i.rarity == filterRarity)
+    ) : [];
+    
+    let pets = showPet ? db.filter(i => 
+        i.type === 'pet' && 
+        i.name.toLowerCase().includes(searchTerm) &&
+        (filterRarity === 'all' || i.rarity == filterRarity)
+    ) : [];
     
     const sortFunc = (a, b) => order === 'high-low' ? b.rarity - a.rarity : a.rarity - b.rarity;
     cookies.sort(sortFunc); pets.sort(sortFunc);
@@ -91,22 +109,86 @@ function renderAll() {
     document.getElementById('petCount').innerText = pets.length;
 
     const generateCards = (list) => list.map(i => `
-        <div class="item-card"><img src="${i.img}"><div style="flex:1">
-            <b>${i.name} (${rarityMap[i.rarity]})</b><br>
-            <button class="btn-sm" style="background:#2196F3;" onclick="openEdit('${i.id}')">編輯</button>
-            <button class="btn-sm btn-del" onclick="handleDelete('${i.id}')">刪除</button>
-        </div></div>`).join('');
+        <div class="item-card" onclick="openDetail('${i.id}')" style="cursor:pointer;">
+            <img src="${i.img}">
+            <div style="flex:1;">
+                <b>${i.name}</b>
+                <div style="font-size: 12px; color: #888; font-weight:bold;">稀有度: ${rarityMap[i.rarity]}</div>
+            </div>
+            <div style="color: #bbb; font-weight: bold; padding-right: 10px;">〉</div>
+        </div>`).join('');
 
     let listHtml = '';
     if (cookies.length > 0) listHtml += `<div class="list-header">🍪 餅乾區</div>` + generateCards(cookies);
     if (pets.length > 0) listHtml += `<div class="list-header">🐾 寵物區</div>` + generateCards(pets);
-    if (!listHtml) listHtml = `<div style="text-align:center; color:#999; margin-top:20px;">尚無資料。</div>`;
+    
+    if (!listHtml && (searchTerm || filterType !== 'all' || filterRarity !== 'all')) {
+        listHtml = `<div style="text-align:center; color:#999; margin-top:20px;">找不到符合條件的角色喔 🥲</div>`;
+    } else if (!listHtml) {
+        listHtml = `<div style="text-align:center; color:#999; margin-top:20px;">尚無資料，快去新增吧！</div>`;
+    }
+    
     document.getElementById('libraryList').innerHTML = listHtml;
     
     renderTeamUI(); 
     renderTeamsDropdown(); 
     updateStorageInfo();
 }
+
+function openDetail(id) {
+    const item = db.find(x => x.id == id);
+    if (!item) return;
+    
+    currentDetailId = id;
+    
+    document.getElementById('detailImgPreview').src = item.img;
+    document.getElementById('detailTitle').innerText = item.name;
+    document.getElementById('detailBadge').innerText = `${item.type === 'cookie' ? '🍪 餅乾' : '🐾 寵物'} - ${rarityMap[item.rarity]}`;
+    
+    document.getElementById('detailName').value = item.name;
+    document.getElementById('detailRarity').value = item.rarity;
+    document.getElementById('detailImg').value = ''; 
+    
+    document.getElementById('detailDeleteBtn').onclick = () => handleDelete(id, true);
+    
+    showPage('page-detail');
+}
+
+async function confirmDetailEdit() {
+    const idx = db.findIndex(i => i.id == currentDetailId);
+    if (idx === -1) return;
+    
+    db[idx].name = document.getElementById('detailName').value;
+    db[idx].rarity = parseInt(document.getElementById('detailRarity').value);
+    
+    const f = document.getElementById('detailImg').files[0];
+    if (f) db[idx].img = await resizeImage(f); 
+    
+    try { 
+        localStorage.setItem('myDB', JSON.stringify(db)); 
+        alert("資料已成功更新！");
+        showPage('page-library'); 
+    } catch (e) { 
+        alert("⚠️ 儲存空間已滿！"); 
+    }
+}
+
+window.handleDelete = (id, fromDetail = false) => {
+    if(confirm("確定刪除？\n(若陣容中有用到此角色，將會自動從槽位拔除)")) { 
+        db = db.filter(i => i.id != id); 
+        
+        currentTeamCookies = currentTeamCookies.map(val => val == id ? "" : val);
+        currentTeamPets = currentTeamPets.map(val => val == id ? "" : val);
+        
+        localStorage.setItem('myDB', JSON.stringify(db)); 
+        
+        if (fromDetail) {
+            showPage('page-library');
+        } else {
+            renderAll(); 
+        }
+    }
+};
 
 function renderTeamUI() {
     const generateSlotsHTML = (arr, type) => {
@@ -195,26 +277,19 @@ function clearEntireTeam() {
     }
 }
 
-/* 🌟 核心升級：智慧判定「另存新檔」與「改名」 */
 function saveTeam() {
     const tName = document.getElementById('teamName').value.trim();
     if(!tName) return alert('請輸入陣容名稱！');
 
-    // 如果目前有載入陣容 (處於編輯模式)
     if (currentLoadedTeamId) {
         const idx = teamsDB.findIndex(t => t.id == currentLoadedTeamId);
         if (idx > -1) {
             const oldName = teamsDB[idx].name;
-            
-            // 判斷玩家是否「修改了名稱」
             if (oldName !== tName) {
                 const wantNew = confirm(`您修改了陣容名稱！\n\n【確定】👉 另存為全新的陣容「${tName}」\n【取消】👉 直接把原本的「${oldName}」改名覆蓋`);
-                
                 if (wantNew) {
-                    // 選擇另存新檔：解除追蹤，讓系統走最下方的新增邏輯
                     currentLoadedTeamId = null;
                 } else {
-                    // 選擇改名覆蓋
                     teamsDB[idx].name = tName; 
                     teamsDB[idx].cookies = [...currentTeamCookies];
                     teamsDB[idx].pets = [...currentTeamPets];
@@ -225,7 +300,6 @@ function saveTeam() {
                     return;
                 }
             } else {
-                // 名稱沒改：直接靜默更新覆蓋
                 teamsDB[idx].cookies = [...currentTeamCookies];
                 teamsDB[idx].pets = [...currentTeamPets];
                 localStorage.setItem('myTeams', JSON.stringify(teamsDB));
@@ -235,7 +309,6 @@ function saveTeam() {
         }
     }
 
-    // --- 以下為新增陣容邏輯 (包含上面另存新檔跳過來的) ---
     const existingIdx = teamsDB.findIndex(t => t.name === tName);
     if (existingIdx > -1) {
         if (confirm(`名稱為「${tName}」的陣容已存在，要覆蓋它嗎？`)) {
@@ -306,37 +379,6 @@ function deleteTeam() {
         renderTeamUI();
     }
 }
-
-function openEdit(id) {
-    const item = db.find(x => x.id == id); 
-    editId = id;
-    document.getElementById('editName').value = item.name;
-    document.getElementById('editRarity').value = item.rarity;
-    document.getElementById('editImg').value = ''; 
-    document.getElementById('editDialog').showModal();
-}
-
-async function confirmEdit() {
-    const idx = db.findIndex(i => i.id == editId); 
-    db[idx].name = document.getElementById('editName').value;
-    db[idx].rarity = parseInt(document.getElementById('editRarity').value);
-    const f = document.getElementById('editImg').files[0];
-    if (f) db[idx].img = await resizeImage(f); 
-    try { localStorage.setItem('myDB', JSON.stringify(db)); document.getElementById('editDialog').close(); renderAll(); } 
-    catch (e) { alert("⚠️ 儲存空間已滿！"); }
-}
-
-window.handleDelete = (id) => {
-    if(confirm("確定刪除？(若陣容中有用到此餅乾，將會自動從槽位移除)")) { 
-        db = db.filter(i => i.id != id); 
-        
-        currentTeamCookies = currentTeamCookies.map(val => val == id ? "" : val);
-        currentTeamPets = currentTeamPets.map(val => val == id ? "" : val);
-        
-        localStorage.setItem('myDB', JSON.stringify(db)); 
-        renderAll(); 
-    }
-};
 
 function exportFile() {
     const backupData = { items: db, teams: teamsDB };

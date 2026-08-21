@@ -4,34 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>薑餅人 - 陣容助手</title>
-    <!-- 引入外部的 CSS 檔案 -->
-    <link rel="stylesheet" href="style.css">
+    <!-- 版本號已更新至 18 -->
+    <link rel="stylesheet" href="style.css?v=18">
+    
+    <style>
+        .bg-bubbles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; margin: 0; padding: 0; pointer-events: none; overflow: hidden; }
+        .bg-bubbles li { position: absolute; list-style: none; display: block; width: 40px; height: 40px; background-color: rgba(255, 152, 0, 0.15); bottom: -150px; animation: squareFly 25s infinite linear; border-radius: 50%; }
+        .bg-bubbles li:nth-child(1) { left: 10%; width: 80px; height: 80px; animation-duration: 15s; }
+        .bg-bubbles li:nth-child(2) { left: 20%; width: 20px; height: 20px; animation-duration: 20s; }
+        .bg-bubbles li:nth-child(3) { left: 25%; width: 60px; height: 60px; animation-duration: 12s; background-color: rgba(76, 175, 80, 0.1); }
+        .bg-bubbles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-duration: 18s; }
+        .bg-bubbles li:nth-child(5) { left: 70%; width: 20px; height: 20px; animation-duration: 14s; }
+        .bg-bubbles li:nth-child(6) { left: 80%; width: 120px; height: 120px; animation-duration: 25s; background-color: rgba(33, 150, 243, 0.1); }
+        .bg-bubbles li:nth-child(7) { left: 32%; width: 160px; height: 160px; animation-duration: 30s; }
+        @keyframes squareFly { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(-1000px) rotate(600deg); opacity: 0; } }
+    </style>
 </head>
 <body>
 
+<ul class="bg-bubbles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul>
+
 <!-- 首頁導航 -->
 <div id="page-home" class="page active">
-    <h1 style="text-align: center; color: #333; margin-bottom: 30px;">薑餅人陣容助手</h1>
-    <button class="menu-btn" onclick="showPage('page-library')">🛠️ 圖鑑管理</button>
-    <button class="menu-btn" style="background:#FF9800" onclick="showPage('page-team')">⚔️ 陣容搭配</button>
-    <button class="menu-btn" style="background:#2196F3" onclick="showPage('page-backup')">🛡️ 資料備份與還原</button>
+    <h1 class="main-title">薑餅人陣容助手</h1>
+    <div class="menu-btn-group">
+        <button class="menu-btn" onclick="showPage('page-library')">🛠️ 圖鑑管理</button>
+        <button class="menu-btn" style="background:#FF9800" onclick="showPage('page-team')">⚔️ 陣容搭配</button>
+        <button class="menu-btn" style="background:#2196F3" onclick="showPage('page-backup')">🛡️ 資料備份與還原</button>
+    </div>
     <div class="storage-status"></div>
 </div>
 
-<!-- 圖鑑管理 -->
+<!-- 圖鑑管理列表 -->
 <div id="page-library" class="page">
     <button onclick="showPage('page-home')" style="background:#888; margin-bottom: 15px;">⬅️ 返回首頁</button>
-    <h2>新增圖鑑</h2>
-    <div class="section">
-        <input type="text" id="itemName" placeholder="名稱">
-        <select id="itemType"><option value="cookie">餅乾</option><option value="pet">寵物</option></select>
-        <select id="itemRarity">
-            <option value="6">TSSR</option><option value="5">SSR</option><option value="4">SR</option>
-            <option value="3">R</option><option value="2">U</option><option value="1">C</option>
-        </select>
-        <input type="file" id="itemImg" accept="image/*">
-        <button onclick="saveItem()">新增項目</button>
+    <h2>圖鑑管理</h2>
+    
+    <!-- 搜尋與篩選區塊 -->
+    <div class="section" style="padding-bottom: 10px;">
+        <input type="text" id="searchInput" placeholder="🔍 搜尋餅乾或寵物名稱..." oninput="renderAll()" style="margin-bottom: 10px; font-weight: bold; color: var(--primary-dark);">
+        <div style="display: flex; gap: 10px;">
+            <select id="filterType" onchange="renderAll()" style="margin-bottom: 0;">
+                <option value="all">🎭 全部種類</option>
+                <option value="cookie">🍪 餅乾</option>
+                <option value="pet">🐾 寵物</option>
+            </select>
+            <select id="filterRarity" onchange="renderAll()" style="margin-bottom: 0;">
+                <option value="all">✨ 全部稀有度</option>
+                <option value="6">TSSR</option>
+                <option value="5">SSR</option>
+                <option value="4">SR</option>
+                <option value="3">R</option>
+                <option value="2">U</option>
+                <option value="1">C</option>
+            </select>
+        </div>
     </div>
+
+    <!-- 新增角色收納區 -->
+    <details class="section" style="cursor: pointer;">
+        <summary style="font-weight: 800; font-size: 18px; color: var(--text-main); outline: none;">➕ 點此展開：新增角色</summary>
+        <div style="margin-top: 15px;">
+            <input type="text" id="itemName" placeholder="名稱">
+            <select id="itemType"><option value="cookie">餅乾</option><option value="pet">寵物</option></select>
+            <select id="itemRarity">
+                <option value="6">TSSR</option><option value="5">SSR</option><option value="4">SR</option><option value="3">R</option><option value="2">U</option><option value="1">C</option>
+            </select>
+            <input type="file" id="itemImg" accept="image/*">
+            <button onclick="saveItem()">新增項目</button>
+        </div>
+    </details>
     
     <div class="section">
         <h3 style="margin-top: 0;">圖鑑列表 <span style="font-size: 14px; color: #666; font-weight: normal;">(餅乾: <span id="cookieCount">0</span> / 寵物: <span id="petCount">0</span>)</span></h3>
@@ -43,6 +85,36 @@
     </div>
 </div>
 
+<!-- 角色詳細與編輯獨立頁面 -->
+<div id="page-detail" class="page">
+    <button onclick="showPage('page-library')" style="background:#888; margin-bottom: 15px;">⬅️ 返回圖鑑列表</button>
+    
+    <div class="section" style="text-align: center; position: relative;">
+        <img id="detailImgPreview" src="" style="width: 110px; height: 110px; border-radius: 20px; object-fit: cover; border: 4px solid #ffcc80; margin-bottom: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.1);">
+        <h2 id="detailTitle" style="margin-top: 0; margin-bottom: 5px; font-size: 22px;"></h2>
+        <span id="detailBadge" style="display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;"></span>
+    </div>
+
+    <div class="section">
+        <h3>✏️ 編輯詳細資料</h3>
+        <label style="font-size: 13px; color: #666; font-weight: bold;">修改名稱</label>
+        <input type="text" id="detailName">
+        
+        <label style="font-size: 13px; color: #666; font-weight: bold;">修改稀有度</label>
+        <select id="detailRarity">
+            <option value="6">TSSR</option><option value="5">SSR</option><option value="4">SR</option>
+            <option value="3">R</option><option value="2">U</option><option value="1">C</option>
+        </select>
+        
+        <label style="font-size: 13px; color: #666; font-weight: bold;">更換圖片 (不選則保留原圖)</label>
+        <input type="file" id="detailImg" accept="image/*">
+        
+        <button onclick="confirmDetailEdit()" style="background:#2196F3; margin-top: 15px;">💾 儲存修改</button>
+        <hr style="margin: 20px 0; border: 0.5px solid #eee;">
+        <button id="detailDeleteBtn" class="btn-del">🗑️ 刪除此角色</button>
+    </div>
+</div>
+
 <!-- 陣容搭配 -->
 <div id="page-team" class="page">
     <button onclick="showPage('page-home')" style="background:#888; margin-bottom: 15px;">⬅️ 返回首頁</button>
@@ -50,14 +122,14 @@
 
     <div class="section" style="background: #e3f2fd;">
         <h3 style="margin-top: 0;">💾 陣容存檔</h3>
-        <input type="text" id="teamName" placeholder="輸入陣容名稱 (例如: 公會戰一隊)">
+        <input type="text" id="teamName" placeholder="輸入陣容名稱">
         <button onclick="saveTeam()" style="background: #2196F3;">儲存當前陣容</button>
         <hr style="margin: 15px 0; border: 0.5px solid #bbb;">
         <select id="savedTeamsList" onchange="loadTeam()">
             <option value="">-- 讀取已儲存的陣容 --</option>
         </select>
         <button onclick="deleteTeam()" class="btn-del">刪除所選陣容</button>
-        <button onclick="clearEntireTeam()" style="background: #FF9800; margin-top: 10px;">🧹 一鍵清空畫面上陣容</button>
+        <button onclick="clearEntireTeam()" style="background: #FF9800; margin-top: 10px;">🧹 一鍵清空畫面</button>
     </div>
 
     <div class="section">
@@ -72,35 +144,15 @@
 <!-- 資料備份 -->
 <div id="page-backup" class="page">
     <button onclick="showPage('page-home')" style="background:#888; margin-bottom: 15px;">⬅️ 返回首頁</button>
-    <h2>資料備份 (檔案模式)</h2>
+    <h2>資料備份</h2>
     <div class="section">
-        <h3 style="margin-top: 0; font-size: 16px;">匯出資料</h3>
-        <p style="font-size: 12px; color: #666;">將目前的圖鑑與陣容打包成檔案下載到手機中。</p>
         <button onclick="exportFile()" style="background:#2196F3">⬇️ 下載備份檔案 (.json)</button>
         <hr style="margin: 20px 0; border: 0.5px solid #eee;">
-        <h3 style="margin-top: 0; font-size: 16px;">匯入資料</h3>
-        <p style="font-size: 12px; color: #666;">選擇之前下載的 .json 備份檔案來還原資料。</p>
         <input type="file" id="backupFileInput" accept=".json" style="margin-bottom: 10px;">
-        <button onclick="importFile()" class="btn-del">🔄 讀取檔案並還原</button>
+        <button onclick="importFile()" class="btn-del">🔄 讀取並還原</button>
         <div class="storage-status"></div>
     </div>
 </div>
-
-<!-- 圖鑑編輯視窗 -->
-<dialog id="editDialog">
-    <h3>編輯項目</h3>
-    <label style="font-size: 14px; color: #555;">名稱</label>
-    <input type="text" id="editName">
-    <label style="font-size: 14px; color: #555;">稀有度</label>
-    <select id="editRarity">
-        <option value="6">TSSR</option><option value="5">SSR</option><option value="4">SR</option>
-        <option value="3">R</option><option value="2">U</option><option value="1">C</option>
-    </select>
-    <label style="font-size: 14px; color: #555;">更改圖片 (不選則保留原圖)</label>
-    <input type="file" id="editImg" accept="image/*">
-    <button onclick="confirmEdit()" style="margin-top: 15px;">儲存修改</button>
-    <button onclick="document.getElementById('editDialog').close()" style="background:#888; margin-top:5px;">取消</button>
-</dialog>
 
 <!-- 角色選擇彈窗 (陣容專用) -->
 <dialog id="selectItemDialog">
@@ -110,8 +162,7 @@
     <button onclick="document.getElementById('selectItemDialog').close()" style="background:#888; margin-top:5px;">返回</button>
 </dialog>
 
-<!-- 引入外部的 JavaScript 檔案 -->
-<script src="script.js"></script>
+<script src="script.js?v=7"></script>
 
 </body>
 </html>

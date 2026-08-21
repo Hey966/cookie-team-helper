@@ -1,11 +1,11 @@
 /* --- 基礎設定與配色 --- */
 :root {
-    --bg-color: #fff9f0; /* 溫暖的奶油色背景 */
+    --bg-color: #fff9f0; 
     --card-bg: #ffffff;
-    --text-main: #5d4037; /* 巧克力深咖啡色 */
-    --primary: #FF9800; /* 薑餅橘 */
+    --text-main: #5d4037; 
+    --primary: #FF9800; 
     --primary-dark: #F57C00;
-    --secondary: #4CAF50; /* 經典綠 */
+    --secondary: #4CAF50; 
     --secondary-dark: #388E3C;
     --danger: #f44336;
     --danger-dark: #d32f2f;
@@ -19,18 +19,53 @@ body {
     background: var(--bg-color); 
     color: var(--text-main);
     margin: 0;
+    position: relative;
+    overflow-x: hidden;
 }
 
 /* --- 頁面切換動畫 --- */
 .page { display: none; }
 .page.active { 
     display: block; 
-    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
 }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* 🌟 首頁標題：漸層光澤 + 呼吸浮動 */
+.main-title { 
+    text-align: center; 
+    font-size: 34px; 
+    font-weight: 900; 
+    margin-top: 30px;
+    margin-bottom: 40px;
+    background: linear-gradient(45deg, #FF9800, #ffb74d, #F57C00);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientFlow 3s ease infinite, floatTitle 3s ease-in-out infinite;
+    filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.1));
+}
+
+@keyframes floatTitle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* 🌟 首頁主選單按鈕：順序錯位彈出動畫 */
+.menu-btn-group button {
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+}
+.menu-btn-group button:nth-child(1) { animation-delay: 0.1s; }
+.menu-btn-group button:nth-child(2) { animation-delay: 0.25s; }
+.menu-btn-group button:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes popIn {
+    0% { opacity: 0; transform: translateY(40px) scale(0.9); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* --- 區塊卡片外觀 --- */
@@ -43,8 +78,7 @@ body {
     border: 1px solid rgba(0,0,0,0.05);
 }
 
-h1, h2, h3 { color: var(--text-main); font-weight: 800; }
-h1 { font-size: 28px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+h2, h3 { color: var(--text-main); font-weight: 800; }
 
 /* --- 動態漸層流動動畫 --- */
 @keyframes gradientFlow {
@@ -55,129 +89,49 @@ h1 { font-size: 28px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
 
 /* --- 立體遊戲活動態按鈕 --- */
 button { 
-    /* 預設綠色流動漸層 (給圖鑑管理、儲存等預設使用) */
     background-image: linear-gradient(45deg, var(--secondary-dark), #66bb6a, var(--secondary-dark));
     background-size: 200% auto;
     animation: gradientFlow 3s ease infinite; 
-    
-    padding: 12px; 
-    border: none; 
-    border-radius: 10px; 
-    width: 100%; 
-    cursor: pointer; 
-    font-weight: 900; 
-    font-size: 16px;
-    letter-spacing: 1px;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* 文字立體陰影，防看不清 */
+    padding: 12px; border: none; border-radius: 10px; width: 100%; 
+    cursor: pointer; font-weight: 900; font-size: 16px; letter-spacing: 1px; color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); 
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-shadow: 0 4px 0 rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.1); 
-    margin-top: 5px;
-    margin-bottom: 8px;
+    margin-top: 5px; margin-bottom: 8px;
 }
-
-/* 懸浮時：放大、變亮、陰影加深 */
 button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 0 rgba(0,0,0,0.2), 0 8px 15px rgba(0,0,0,0.2);
     filter: brightness(1.05);
 }
-
-/* 點擊時：真實下壓凹陷效果 */
 button:active { 
-    transform: translateY(4px); 
-    box-shadow: 0 0px 0 rgba(0,0,0,0.2), 0 0px 0 rgba(0,0,0,0.1); 
+    transform: translateY(4px) !important;
+    box-shadow: 0 0px 0 rgba(0,0,0,0.2), 0 0px 0 rgba(0,0,0,0.1) !important; 
     filter: brightness(0.95);
 }
 
 /* --- 各按鈕專屬動態漸層色 --- */
-button[onclick*="page-team"] {
-    background-image: linear-gradient(45deg, var(--primary-dark), #ffb74d, var(--primary-dark)) !important;
-}
+button[onclick*="page-team"] { background-image: linear-gradient(45deg, var(--primary-dark), #ffb74d, var(--primary-dark)) !important; }
+button[onclick*="page-backup"] { background-image: linear-gradient(45deg, var(--blue-dark), #42a5f5, var(--blue-dark)) !important; }
+button[onclick*="clearEntireTeam"] { background-image: linear-gradient(45deg, #f57c00, #ffca28, #f57c00) !important; }
+button.btn-del { background-image: linear-gradient(45deg, var(--danger-dark), #ef5350, var(--danger-dark)) !important; }
 
-button[onclick*="page-backup"] {
-    background-image: linear-gradient(45deg, var(--blue-dark), #42a5f5, var(--blue-dark)) !important;
-}
-
-button[onclick*="clearEntireTeam"] {
-    background-image: linear-gradient(45deg, #f57c00, #ffca28, #f57c00) !important;
-}
-
-button.btn-del { 
-    background-image: linear-gradient(45deg, var(--danger-dark), #ef5350, var(--danger-dark)) !important; 
-}
-
-.menu-btn { 
-    height: 85px; 
-    font-size: 20px; 
-    margin-bottom: 15px; 
-    border-radius: 16px; 
-}
+.menu-btn { height: 85px; font-size: 20px; margin-bottom: 15px; border-radius: 16px; }
 
 /* --- 輸入框與下拉選單 --- */
 select, input[type="text"], input[type="file"], textarea { 
-    width: 100%; 
-    padding: 12px; 
-    margin-bottom: 12px; 
-    box-sizing: border-box; 
-    border: 2px solid #e0e0e0; 
-    border-radius: 10px; 
-    font-size: 14px;
-    background: #fafafa;
-    color: var(--text-main);
-    transition: border-color 0.2s;
-    outline: none;
+    width: 100%; padding: 12px; margin-bottom: 12px; box-sizing: border-box; 
+    border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px;
+    background: #fafafa; color: var(--text-main); transition: border-color 0.2s; outline: none;
 }
-select:focus, input[type="text"]:focus, textarea:focus {
-    border-color: var(--primary);
-    background: #fff;
-}
-
-/* --- 圖鑑列表卡片 --- */
-.item-card { 
-    border: 1px solid #eee; 
-    padding: 12px; 
-    border-radius: 12px; 
-    margin-bottom: 12px; 
-    display: flex; 
-    align-items: center; 
-    gap: 15px; 
-    background: #fff; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.04); 
-    transition: transform 0.2s;
-}
-.item-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
-}
-.item-card img { 
-    width: 60px; 
-    height: 60px; 
-    object-fit: cover; 
-    border-radius: 8px; 
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
-}
-.btn-sm { 
-    width: auto; 
-    padding: 8px 12px; 
-    font-size: 12px; 
-    box-shadow: 0 3px 0 rgba(0,0,0,0.15);
-}
+select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--primary); background: #fff; }
 
 /* --- 彈窗美化 --- */
 dialog { 
-    width: 92%; 
-    max-width: 420px; 
-    border: none; 
-    border-radius: 20px; 
-    padding: 24px; 
-    background: var(--bg-color);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
+    width: 92%; max-width: 420px; border: none; border-radius: 20px; padding: 24px; 
+    background: var(--bg-color); box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
 }
-dialog::backdrop { 
-    background: rgba(30, 20, 10, 0.6); 
-    backdrop-filter: blur(3px); /* 背景模糊效果 */
-}
+dialog::backdrop { background: rgba(30, 20, 10, 0.6); backdrop-filter: blur(3px); }
 dialog[open] { animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
 @keyframes zoomIn {
@@ -185,105 +139,103 @@ dialog[open] { animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     to { opacity: 1; transform: scale(1); }
 }
 
-/* --- 新版陣容網格樣式 (6隻一排) --- */
-.team-grid-cookie { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 15px; }
-.team-grid-pet { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 250px; }
+/* 🌟 --- 完美 6x2 陣容網格 (防擠壓 + 支援微橫滑) --- 🌟 */
+.team-grid-cookie { 
+    display: grid; 
+    grid-template-columns: repeat(6, minmax(55px, 1fr)); 
+    gap: 6px; 
+    margin-bottom: 15px; 
+    overflow-x: auto; 
+    padding-bottom: 5px; 
+}
 
+.team-grid-pet { 
+    display: grid; 
+    grid-template-columns: repeat(3, minmax(55px, 1fr)); 
+    gap: 8px; 
+    margin-bottom: 15px; 
+}
+
+/* 槽位微調 */
 .team-slot { 
     position: relative; 
     aspect-ratio: 1; 
     border: 2px dashed #ccc; 
-    border-radius: 12px; 
+    border-radius: 8px; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
     justify-content: center; 
     cursor: pointer; 
-    background: #f5f5f5; 
+    background: #fff; 
     overflow: hidden; 
     transition: all 0.2s; 
 }
 .team-slot:active { transform: scale(0.92); }
 .team-slot:hover { border-color: var(--primary); background: #fff8e1; }
+.team-slot.filled { border: 2px solid var(--primary); background: linear-gradient(145deg, #ffffff, #fff3e0); }
+.team-slot img { width: 100%; height: 70%; object-fit: cover; border-bottom: 2px solid #ffe0b2; }
 
-.team-slot.filled { 
-    border: 2px solid var(--primary); 
-    background: linear-gradient(145deg, #ffffff, #fff3e0); 
-    justify-content: flex-start; 
-    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.2);
-}
-.team-slot img { width: 100%; height: 65%; object-fit: cover; border-bottom: 2px solid #ffe0b2; }
+/* 名字防擠壓，變單行 + 刪節號 */
 .team-slot .slot-name { 
-    font-size: 11px; 
-    padding: 4px 2px; 
-    text-align: center; 
-    white-space: nowrap; 
+    font-size: 10px; 
+    font-weight: bold; 
     overflow: hidden; 
     text-overflow: ellipsis; 
-    width: 100%; 
-    font-weight: 900; 
+    white-space: nowrap; 
+    width: 95%; 
+    text-align: center; 
+    padding: 3px 0; 
     color: var(--text-main); 
 }
+
 .team-slot .slot-num { 
     position: absolute; 
-    top: 4px; 
-    left: 4px; 
+    top: 2px; 
+    left: 2px; 
     background: rgba(0,0,0,0.6); 
     color: white; 
-    font-size: 10px; 
-    padding: 2px 6px; 
-    border-radius: 6px; 
-    z-index: 2; 
-    font-weight: bold;
+    font-size: 9px; 
+    padding: 1px 4px; 
+    border-radius: 4px; 
+    z-index: 2;
 }
-.team-slot .add-icon { font-size: 32px; color: #bbb; font-weight: 300; }
+.add-icon { font-size: 24px; color: #bbb; font-weight: 300; }
 
 /* --- 選角彈窗網格 --- */
 .select-grid { 
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 12px; 
-    max-height: 55vh; 
-    overflow-y: auto; 
-    padding: 5px; 
-    margin-top: 15px; 
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-height: 55vh; 
+    overflow-y: auto; padding: 5px; margin-top: 15px; 
 }
 .select-item { 
-    border: 2px solid transparent; 
-    border-radius: 12px; 
-    text-align: center; 
-    padding: 10px 5px; 
-    cursor: pointer; 
-    background: white; 
-    transition: all 0.2s; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.06); 
+    border: 2px solid transparent; border-radius: 12px; text-align: center; padding: 10px 5px; 
+    cursor: pointer; background: white; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.06); 
 }
 .select-item:hover { border-color: var(--primary); transform: translateY(-2px); }
 .select-item img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; margin-bottom: 5px; }
 .select-item .char-name { font-size: 12px; font-weight: 800; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .select-item .char-rarity { font-size: 11px; color: #888; font-weight: bold; margin-top: 2px; }
-.select-item.disabled { 
-    opacity: 0.5; 
-    cursor: not-allowed; 
-    filter: grayscale(80%); 
-    box-shadow: none;
-    border-color: #ddd;
-}
+.select-item.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(80%); box-shadow: none; border-color: #ddd; }
 .select-item.disabled:hover { transform: none; border-color: transparent; }
 
-/* --- 狀態列與標題 --- */
+/* --- 狀態列 --- */
 .storage-status { 
-    text-align: center; 
-    font-size: 13px; 
-    margin-top: 20px; 
-    color: #8d6e63; 
-    font-weight: 800; 
-    background: rgba(255,255,255,0.6);
-    padding: 8px;
-    border-radius: 20px;
+    text-align: center; font-size: 13px; margin-top: 20px; color: #8d6e63; font-weight: 800; 
+    background: rgba(255,255,255,0.6); padding: 8px; border-radius: 20px;
 }
+
+/* ========================================= */
+/* 🌟 圖鑑列表 UI (高對比清晰版) 🌟 */
+/* ========================================= */
+#libraryList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
 .list-header { 
-    margin: 20px 0 12px 0; 
+    grid-column: 1 / -1;
+    margin: 15px 0 5px 0; 
     color: var(--text-main); 
     font-size: 18px; 
     border-bottom: 3px solid #ffcc80; 
@@ -291,8 +243,55 @@ dialog[open] { animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     font-weight: 900; 
 }
 
-/* 滾動條美化 (針對彈窗與整個頁面) */
-::-webkit-scrollbar { width: 6px; }
+.item-card { 
+    border: 1px solid rgba(0,0,0,0.06); 
+    border-left: 6px solid var(--primary-dark); 
+    padding: 12px; 
+    border-radius: 14px; 
+    margin-bottom: 0; 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    background: linear-gradient(135deg, #ffffff 50%, #fff3e0 100%); 
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.18); 
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer; 
+}
+
+.item-card:hover {
+    transform: translateX(4px) translateY(-2px);
+    box-shadow: 0 8px 18px rgba(255, 152, 0, 0.25); 
+    border-left-color: var(--secondary-dark); 
+}
+
+.item-card:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.item-card img { 
+    width: 65px; 
+    height: 65px; 
+    object-fit: cover; 
+    border-radius: 12px; 
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15); 
+    border: 2px solid #ffb74d; 
+}
+
+.item-card b {
+    font-size: 16px; 
+    font-weight: 900; 
+    color: #4e342e; 
+    display: block;
+    margin-bottom: 8px;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55vw; 
+}
+
+/* 滾動條美化 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d7ccc8; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #bcaaa4; }
